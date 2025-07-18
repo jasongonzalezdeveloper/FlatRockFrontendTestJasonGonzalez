@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import Product from './Product';
+import ProductItem from './ProductItem';
 import FilterLayout from '../filter/FilterLayout';
 import { useRouter } from "next/navigation";
 
@@ -15,12 +15,12 @@ export default function ProductList() {
             <h1 className="py-8 text-2xl font-bold">Products</h1>
             <FilterLayout />
             <div className="gap-x-2 gap-y-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                <Product redirectToProductDetail={redirectToProductDetail} />
-                <Product redirectToProductDetail={redirectToProductDetail} />
-                <Product redirectToProductDetail={redirectToProductDetail} />
-                <Product redirectToProductDetail={redirectToProductDetail} />
-                <Product redirectToProductDetail={redirectToProductDetail} />
-                <Product redirectToProductDetail={redirectToProductDetail} />
+                <ProductItem redirectToProductDetail={redirectToProductDetail} />
+                <ProductItem redirectToProductDetail={redirectToProductDetail} />
+                <ProductItem redirectToProductDetail={redirectToProductDetail} />
+                <ProductItem redirectToProductDetail={redirectToProductDetail} />
+                <ProductItem redirectToProductDetail={redirectToProductDetail} />
+                <ProductItem redirectToProductDetail={redirectToProductDetail} />
             </div>
         </div>
     )

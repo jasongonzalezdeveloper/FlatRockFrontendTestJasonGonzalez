@@ -9,17 +9,17 @@ import { useState } from 'react';
 type ProductProps = {
     redirectToProductDetail: (productId: string) => void;
 };
-export default function Product({ redirectToProductDetail }: ProductProps) {
+export default function ProductItem({ redirectToProductDetail }: ProductProps) {
     const [cartColor, setCartColor] = useState('#08BB4F');
 
     return (
         <>
-            <div className="w-[232px] border-[#F7F5F7] border-[1.54px] relative rounded-lg overflow-hidden" onClick={() => redirectToProductDetail("1231231312")}>
-            <div className="absolute top-2 right-2 z-10 cursor-pointer" onClick={e => e.stopPropagation()}>
-                <div className="bg-white rounded-full flex items-center justify-center w-8 h-8 shadow">
-                    <ShoppingBag color={cartColor} size={20} />
+            <div className="w-[232px] border-[#F7F5F7] border-[1.54px] relative rounded-lg overflow-hidden cursor-pointer" onClick={() => redirectToProductDetail("1231231312")}>
+                <div className="absolute top-2 right-2 z-10 cursor-pointer" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white rounded-full flex items-center justify-center w-8 h-8 shadow">
+                        <ShoppingBag color={cartColor} size={20} />
+                    </div>
                 </div>
-            </div>
                 <div className="h-[245px] bg-gray-100 px-4 py-7 flex items-center justify-center">
                     <Image
                         src="/images/shoes.png"

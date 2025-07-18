@@ -1,9 +1,5 @@
-import ProductList from "@/components/products/list/ProductList";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div>
-      <ProductList />
-    </div>
-  );
+  redirect("/product/list")
 }

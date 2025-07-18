@@ -1,20 +1,37 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import Image from 'next/image'
 import { ShoppingBag } from 'lucide-react';
 
 import { useState } from 'react';
+import { Product } from '@/components/types/products/Product';
+import { Category } from '@/components/types/products/Enums';
 
 type ProductProps = {
+    productId: string;
     redirectToProductDetail: (productId: string) => void;
 };
-export default function ProductItem({ redirectToProductDetail }: ProductProps) {
+export default function ProductItem({ productId, redirectToProductDetail }: ProductProps) {
+    const [productInfo, setProductInfo] = useState<Product>();
     const [cartColor, setCartColor] = useState('#08BB4F');
+
+    useEffect(() => {
+        const getProductDetail = async () => {
+            try {
+                const response = await fetch(`http://localhost:3010/products/${productId}`);
+                const data = await response.json();
+                setProductInfo(data);
+            } catch (err) {
+                throw new Error('Error loading product details');
+            }
+        }
+        getProductDetail();
+    }, [productId]);
 
     return (
         <>
-            <div className="w-[232px] border-[#F7F5F7] border-[1.54px] relative rounded-lg overflow-hidden cursor-pointer" onClick={() => redirectToProductDetail("1231231312")}>
+            <div className="w-[232px] text-[#667085] hover:bg-[#667085] transition-colors duration-300 hover:text-white border-[#F7F5F7] border-[1.54px] relative rounded-lg overflow-hidden cursor-pointer" onClick={() => redirectToProductDetail("1231231312")}>
                 <div className="absolute top-2 right-2 z-10 cursor-pointer" onClick={e => e.stopPropagation()}>
                     <div className="bg-white rounded-full flex items-center justify-center w-8 h-8 shadow">
                         <ShoppingBag color={cartColor} size={20} />
@@ -22,20 +39,20 @@ export default function ProductItem({ redirectToProductDetail }: ProductProps) {
                 </div>
                 <div className="h-[245px] bg-gray-100 px-4 py-7 flex items-center justify-center">
                     <Image
-                        src="/images/shoes.png"
+                        src={productInfo?.category === Category.Shoes ? "/images/shoes.png" : "/images/t-shirt.png"}
                         alt="Product Image"
                         width={232}
                         height={245}
                         className="object-cover" />
                 </div>
-                <div className="pt-3 pb-1 pl-2 text-[#667085]">
-                    <h2 className="text-sm font-medium">Product Name</h2>
+                <div className="pt-3 pb-1 pl-2 ">
+                    <h2 className="font-bold">{productInfo?.product_name}</h2>
                 </div>
-                <div className="pb-3 pl-2 text-[#98A2B3]">
-                    <h3 className="text-xs font-normal">Brand Name</h3>
+                <div className="pb-3 pl-2 ">
+                    <h3 className="text-xs font-normal">{productInfo?.brand}</h3>
                 </div>
-                <div className="py-3 px-2 text-center border-t border-t-[#F7F5F7] border-t-[1px]">
-                    $99.99
+                <div className="py-3 px-2 text-center border-t-[#F7F5F7] border-t-[1px]">
+                    ${productInfo?.price}
                 </div>
             </div>
         </>

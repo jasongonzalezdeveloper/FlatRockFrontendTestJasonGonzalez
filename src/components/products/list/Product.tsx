@@ -10,7 +10,7 @@ export default function Product() {
     const [cartColor, setCartColor] = useState('#08BB4F');
 
     return (
-        <div className="w-[232px] border-[#F7F5F7] border-[1.54px] relative rounded-lg">
+        <div className="w-[232px] border-[#F7F5F7] border-[1.54px] relative rounded-lg overflow-hidden">
             <div className="absolute top-2 right-2 z-10 cursor-pointer">
                 <div className="bg-white rounded-full flex items-center justify-center w-8 h-8 shadow">
                     <ShoppingBag color={cartColor} size={20} />

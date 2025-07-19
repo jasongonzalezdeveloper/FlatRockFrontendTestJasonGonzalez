@@ -6,6 +6,7 @@ import { Trash, Plus, Minus } from 'lucide-react';
 import { UseCartContext } from '../hooks/CartContext';
 import { CartItem } from '../types/CartItem';
 import { Category } from '../types/products/Enums';
+import toast from 'react-hot-toast';
 
 type CartProps = {
     open: boolean;
@@ -40,6 +41,32 @@ export default function Cart({ open, setCartOpen }: CartProps) {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [open]);
+
+
+    const fetchCheckout = async () => {
+        if( cart.length === 0) {
+            toast.error("Your cart is empty!");
+            return;
+        }
+        try {
+            const response = await fetch("http://localhost:3010/checkout", {
+                method: "POST",
+                body: JSON.stringify(cart),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+            const data = await response.text();
+            if (data == "success") {
+                toast.success("Checkout successful!");
+            } else{
+                toast.error("Checkout failed, please try again.");
+            }
+        } catch (error) {
+            console.error("Checkout error:", error);
+            toast.error("An error occurred during checkout.");
+        }
+    }
 
     return (
         <div ref={dropdownRef} className={`absolute right-0 top-[90px] w-[400px] bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 ${open ? "block" : "hidden"}`}>
@@ -83,7 +110,7 @@ export default function Cart({ open, setCartOpen }: CartProps) {
                 )}
             </div>
             <div>
-                <button className="bg-[#2D9C07] text-white w-full py-3 rounded-b-lg font-semibold shadow hover:bg-gray-400 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
+                <button className="bg-[#2D9C07] text-white w-full py-3 rounded-b-lg font-semibold shadow hover:bg-gray-400 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none" onClick={fetchCheckout}>
                     Continue To Checkout
                 </button>
             </div>

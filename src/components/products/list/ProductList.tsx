@@ -13,6 +13,8 @@ export default function ProductList() {
     const [categoryFilter, setCategoryFilter] = useState<string>('All');
     const [selectedBrandNames, setSelectedBrandNames] = useState<string[]>([]); // Cambiado a string[]
     const [sortByValue, setSortByValue] = useState<string>();
+    const [priceRange, setPriceRange] = useState<number[]>([0, 0]);
+    const [selectedPriceRange, setSelectedPriceRange] = useState<number[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
@@ -39,6 +41,25 @@ export default function ProductList() {
 
         fetchData();
     }, []);
+
+    useEffect(() => {
+        getPriceRange(allProducts);
+    }, [allProducts]);
+
+    const getPriceRange = (products: Product[]) => {
+        if (products.length > 0) {
+            const prices = products.map((p: Product) => p.price);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            setPriceRange([minPrice, maxPrice]);
+        } else {
+            setPriceRange([0, 0]);
+        }
+    }
+
+    const getPriceRangeFilter = (prices: number[]) => {
+        setSelectedPriceRange(prices);
+    }
 
     const sortProducts = (products: Product[], sortBy?: string) => {
         if (!sortBy) return products;
@@ -71,8 +92,15 @@ export default function ProductList() {
             result = result.filter(product => selectedBrandNames.includes(product.brand));
         }
 
+        // Apply price filter
+        if (selectedPriceRange) {
+            result = result.filter(product =>
+                product.price >= selectedPriceRange[0] && product.price <= selectedPriceRange[1]
+            );
+        }
+
         return sortProducts(result, sortByValue);
-    }, [allProducts, categoryFilter, selectedBrandNames, sortByValue]);
+    }, [allProducts, categoryFilter, selectedBrandNames, sortByValue, selectedPriceRange]);
 
     const redirectToProductDetail = (productId: string) => {
         router.push(`/product/detail/${productId}`);
@@ -86,6 +114,9 @@ export default function ProductList() {
             <FilterLayout
                 onCategoryChange={setCategoryFilter}
                 currentCategory={categoryFilter}
+                categories={categoryList}
+                priceRange={priceRange}
+                getPriceRangeFilter={getPriceRangeFilter}
                 onSortByChange={setSortByValue}
                 onBrandChange={setSelectedBrandNames}
                 availableBrands={Array.from(new Set(allProducts.map(p => p.brand)))} // Pasar solo los nombres

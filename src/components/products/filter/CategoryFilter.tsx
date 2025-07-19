@@ -4,8 +4,9 @@ import React from 'react'
 type CategoryFilterProps = {
     onCategoryChange: (category: string) => void;
     currentCategory?: string;
+    categories?: string[]; 
 };
-export default function CategoryFilter({ onCategoryChange, currentCategory }: CategoryFilterProps) {
+export default function CategoryFilter({ onCategoryChange, currentCategory, categories }: CategoryFilterProps) {
   return (
     <div className="bg-[#EBEDEC] w-auto px-2 py-1 rounded-sm cursor-pointer">
       <div className="flex gap-2">

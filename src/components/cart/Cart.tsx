@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Trash, Plus, Minus } from 'lucide-react';
 
@@ -7,12 +7,14 @@ import { UseCartContext } from '../hooks/CartContext';
 import { CartItem } from '../types/CartItem';
 import { Category } from '../types/products/Enums';
 
-interface CartProps {
+type CartProps = {
     open: boolean;
+    setCartOpen: (open: boolean) => void;
 }
-export default function Cart({ open }: CartProps) {
+export default function Cart({ open, setCartOpen }: CartProps) {
     const { cart, incrementItem, decrementItem, removeFromCart } = UseCartContext();
-
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    
     const addOneMoreToCart =(productId: string, option_type: string) => {
         incrementItem(productId, option_type);
     }
@@ -25,8 +27,22 @@ export default function Cart({ open }: CartProps) {
         removeFromCart(productId, option_type);
     }
 
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setCartOpen(false);
+            }
+        }
+        if (open) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [open]);
+
     return (
-        <div className={`absolute right-0 top-[90px] w-[400px] bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 ${open ? "block" : "hidden"}`}>
+        <div ref={dropdownRef} className={`absolute right-0 top-[90px] w-[400px] bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 ${open ? "block" : "hidden"}`}>
             <div className="p-4 h-[420px] overflow-y-auto">
                 {cart?.length === 0 ? (
                     <div>Your cart is empty</div>

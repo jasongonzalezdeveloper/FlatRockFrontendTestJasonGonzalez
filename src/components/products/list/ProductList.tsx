@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Product } from '@/components/types/products/Product';
 import Loading from '@/components/ui/Loading';
 import { Category, optionsByDropdownValues } from '@/components/types/products/Enums';
+import { Pagination, PaginationItem, Stack } from '@mui/material';
+
 
 export default function ProductList() {
     const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -16,6 +18,8 @@ export default function ProductList() {
     const [priceRange, setPriceRange] = useState<number[]>([0, 0]);
     const [selectedPriceRange, setSelectedPriceRange] = useState<number[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const productsPerPage = 12;
     const router = useRouter();
 
     useEffect(() => {
@@ -102,6 +106,16 @@ export default function ProductList() {
         return sortProducts(result, sortByValue);
     }, [allProducts, categoryFilter, selectedBrandNames, sortByValue, selectedPriceRange]);
 
+    const paginatedProducts = useMemo(() => {
+        const start = (page - 1) * productsPerPage;
+        const end = start + productsPerPage;
+        return filteredProducts.slice(start, end);
+    }, [filteredProducts, page]);
+
+    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+        setPage(value);
+    };
+
     const redirectToProductDetail = (productId: string) => {
         router.push(`/product/detail/${productId}`);
     };
@@ -122,14 +136,14 @@ export default function ProductList() {
                 availableBrands={Array.from(new Set(allProducts.map(p => p.brand)))} // Pasar solo los nombres
             />
             <div className="gap-x-2 gap-y-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                {filteredProducts.length === 0 ? (
+                {paginatedProducts.length === 0 ? (
                     <div className="col-span-full text-center py-8">
                         {selectedBrandNames.length > 0 || categoryFilter !== 'All'
                             ? "No products match your filters"
                             : "No products available"}
                     </div>
                 ) : (
-                    filteredProducts.map(product => (
+                    paginatedProducts.map(product => (
                         <ProductItem
                             key={product.id}
                             productInfo={product}
@@ -137,6 +151,18 @@ export default function ProductList() {
                         />
                     ))
                 )}
+            </div>
+            <div className="flex justify-end py-6">
+                <Stack spacing={2}>
+                    <Pagination
+                        count={Math.ceil(filteredProducts.length / productsPerPage)}
+                        page={page}
+                        onChange={handlePageChange}
+                        renderItem={(item) => (
+                            <PaginationItem {...item} />
+                        )}
+                    />
+                </Stack>
             </div>
         </div>
     );

@@ -4,7 +4,7 @@ import React from 'react';
 interface DropdownMenuProps {
     options: string[];
     selected: string | null;
-    setSelected: (options: string) => void;
+    setSelected: (option: string) => void;
     setOpen: (open: boolean) => void;
 }
 

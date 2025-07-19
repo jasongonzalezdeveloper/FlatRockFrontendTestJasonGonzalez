@@ -7,18 +7,16 @@ import DropdownMenu from '@/components/ui/DropdownMenu';
 import { useParams, useRouter } from "next/navigation";
 import { Product } from '@/components/types/products/Product';
 import { Category } from '@/components/types/products/Enums';
-
-
-const options = [
-    'black',
-    'white',
-    'red'
-];
+import { UseCart } from '@/components/hooks/UseCart';
+import toast from 'react-hot-toast';
+import Loading from '@/components/ui/Loading';
 
 export default function ProductDetail() {
     const [open, setOpen] = useState(false);
-    const [product, setProduct] = useState<Product>();
+    const [product, setProduct] = useState<Product | undefined>();
     const [selected, setSelected] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const { addToCart, setProductToCartItem } = UseCart();
 
     const router = useRouter();
     const params = useParams();
@@ -26,24 +24,56 @@ export default function ProductDetail() {
         router.push("/product/list");
     }
 
+
     useEffect(() => {
         const { id } = params;
         const getProductDetail = async () => {
             try {
                 const response = await fetch(`http://localhost:3010/products/${id}`);
                 const data = await response.json();
-                setProduct(data);
+                const updatedProduct = {
+                    ...data,
+                    stock_quantity: refreshQuantity(data)
+                };
+                setProduct(updatedProduct);
             } catch (err) {
                 console.error(err instanceof Error ? err.message : 'Unknown error');
             }
         }
-
         getProductDetail();
     }, []);
 
-    const addToCart = () => {
-
+    const refreshQuantity = (product: Product) => {
+        const savedCart = localStorage.getItem('cart');
+        const item = savedCart ? JSON.parse(savedCart).find((item: { id: string; }) => item.id === product.id) : null;
+        return item ? item.quantity : product.stock_quantity;
     }
+
+    const onClickAddToCart = () => {
+        setError(null);
+        if (product) {
+            if (product?.stock_quantity === 0) {
+                setError('This product is out of stock');
+                return;
+            }
+
+            if (product && product?.selectible_option && product?.selectible_option?.option?.length > 0 && !selected) {
+                setError('Please select an option before adding to cart');
+                return;
+            }
+
+            product.stock_quantity -= 1;
+            addToCart(setProductToCartItem(product!, selected ?? ""));
+            toast.success("Product added to cart!");
+        }
+    };
+
+    const onSelectOption = (option: string) => {
+        setError(null);
+        setSelected(option);
+    }
+
+    if (!product) return <Loading />;
 
     return (
         <>
@@ -72,7 +102,7 @@ export default function ProductDetail() {
                         {product?.brand}
                     </div>
                     <div className="text-2xl font-semibold mb-4">
-                        {product?.price}
+                        ${product?.price}
                     </div>
                     <span className="text-[#828282] mb-6 block">
                         {product?.description}
@@ -81,20 +111,23 @@ export default function ProductDetail() {
                         {product && product?.selectible_option && product?.selectible_option?.option?.length > 0 ? (
                             <div className="relative w-[290px]">
                                 <button
-                                    className="border-b-2 border-black px-0 py-2 text-left flex justify-between items-center cursor-pointer bg-white w-[290px] rounded-none"
+                                    className={`border-b-2 px-0 py-2 text-left flex justify-between items-center cursor-pointer bg-white w-[290px] rounded-none ${error ? "border-[#EA2B2B]" : "border-black"}`}
                                     onClick={() => setOpen(!open)}
                                 >
-                                    <span>Select Option: {selected}</span>
+                                    <span>Select {product?.selectible_option.option_name}: {selected}</span>
                                     {open ? <ChevronUp /> : <ChevronDown />}
                                 </button>
                                 {open && (
-                                    <DropdownMenu options={product?.selectible_option?.option} selected={selected} setSelected={setSelected} setOpen={setOpen} />
+                                    <DropdownMenu options={product?.selectible_option?.option} selected={selected} setSelected={onSelectOption} setOpen={setOpen} />
                                 )}
                             </div>
                         ) : ''}
                     </div>
                     <div className="mb-6">
-                        <button className="bg-black text-white w-full py-5 rounded-lg font-semibold shadow hover:bg-gray-400 transition-colors cursor-pointer" onClick={addToCart}>
+                        <button
+                            className="bg-black text-white w-full py-5 rounded-lg font-semibold shadow hover:bg-gray-400 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                            onClick={onClickAddToCart}
+                            disabled={product?.stock_quantity === 0}>
                             Add to cart
                         </button>
                     </div>

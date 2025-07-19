@@ -13,7 +13,7 @@ type CartProps = {
     setCartOpen: (open: boolean) => void;
 }
 export default function Cart({ open, setCartOpen }: CartProps) {
-    const { cart, incrementItem, decrementItem, removeFromCart } = UseCartContext();
+    const { cart, incrementItem, decrementItem, removeFromCart, clearCart } = UseCartContext();
     const dropdownRef = useRef<HTMLDivElement>(null);
     
     const addOneMoreToCart =(productId: string, option_type: string) => {
@@ -59,6 +59,8 @@ export default function Cart({ open, setCartOpen }: CartProps) {
             const data = await response.text();
             if (data == "success") {
                 toast.success("Checkout successful!");
+                clearCart();
+                setCartOpen(false);
             } else{
                 toast.error("Checkout failed, please try again.");
             }

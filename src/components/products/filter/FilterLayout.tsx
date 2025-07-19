@@ -2,13 +2,14 @@
 import React from 'react';
 import DropdownFilter from './DropdownFilter';
 import CategoryFilter from './CategoryFilter';
+import { Category } from '@/components/types/products/Enums';
 
 type FilterLayoutProps = {
   onCategoryChange: (category: string) => void;
   currentCategory: string;
   onSortByChange: (sortBy?: string) => void;
   onBrandChange: (brand?: string[]) => void;
-  categories: string[];
+  categories: Category[];
   priceRange?: [number, number];
   getPriceRangeFilter: (prices: number[]) => void;
 };

@@ -21,3 +21,10 @@ export enum OptionName {
     Color = "Color",
     Size = "Size",
 }
+
+export const optionsByDropdownValues = {
+    'dateDesc': 'Release Date: Desc',
+    'dateAsc': 'Release Date: Asc',
+    'priceDesc': 'Price: Desc',
+    'priceAsc': 'Price: Asc'
+};

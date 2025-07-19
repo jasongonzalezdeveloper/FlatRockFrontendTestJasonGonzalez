@@ -1,47 +1,112 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ProductItem from './ProductItem';
 import FilterLayout from '../filter/FilterLayout';
 import { useRouter } from "next/navigation";
 import { Product } from '@/components/types/products/Product';
 import Loading from '@/components/ui/Loading';
+import { Category, optionsByDropdownValues } from '@/components/types/products/Enums';
 
 export default function ProductList() {
-    const [products, setProducts] = useState<Product[]>([]);
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [categoryList, setCategoryList] = useState<Category[]>([]);
+    const [categoryFilter, setCategoryFilter] = useState<string>('All');
+    const [selectedBrandNames, setSelectedBrandNames] = useState<string[]>([]); // Cambiado a string[]
+    const [sortByValue, setSortByValue] = useState<string>();
     const [isLoading, setIsLoading] = useState(true);
-
     const router = useRouter();
-    const redirectToProductDetail = (productId: string) => {
-        router.push(`/product/detail/${productId}`);
-    }
 
     useEffect(() => {
-        const getProductsList = async () => {
+        const fetchData = async () => {
+            setIsLoading(true);
             try {
-                const response = await fetch('http://localhost:3010/products');
-                setProducts(await response.json());
+                const [productsRes, categoriesRes] = await Promise.all([
+                    fetch('http://localhost:3010/products'),
+                    fetch('http://localhost:3010/categories')
+                ]);
+
+                const products = await productsRes.json();
+                const categories = await categoriesRes.json();
+
+                setAllProducts(products);
+                setCategoryList(categories);
             } catch (err) {
-                throw new Error('Error loading products', { cause: err });
+                console.error(err instanceof Error ? err.message : 'Unknown error');
             } finally {
                 setIsLoading(false);
             }
         };
 
-        getProductsList();
+        fetchData();
     }, []);
 
+    const sortProducts = (products: Product[], sortBy?: string) => {
+        if (!sortBy) return products;
+
+        const sorted = [...products];
+        switch (sortBy) {
+            case optionsByDropdownValues.dateAsc:
+                return sorted.sort((a, b) => new Date(a.release_date).getTime() - new Date(b.release_date).getTime());
+            case optionsByDropdownValues.dateDesc:
+                return sorted.sort((a, b) => new Date(b.release_date).getTime() - new Date(a.release_date).getTime());
+            case optionsByDropdownValues.priceAsc:
+                return sorted.sort((a, b) => a.price - b.price);
+            case optionsByDropdownValues.priceDesc:
+                return sorted.sort((a, b) => b.price - a.price);
+            default:
+                return products;
+        }
+    };
+
+    const filteredProducts = useMemo(() => {
+        let result = allProducts;
+
+        // Apply category filter
+        if (categoryFilter !== 'All') {
+            result = result.filter(product => product.category === categoryFilter);
+        }
+
+        // Apply brand filter
+        if (selectedBrandNames.length > 0) {
+            result = result.filter(product => selectedBrandNames.includes(product.brand));
+        }
+
+        return sortProducts(result, sortByValue);
+    }, [allProducts, categoryFilter, selectedBrandNames, sortByValue]);
+
+    const redirectToProductDetail = (productId: string) => {
+        router.push(`/product/detail/${productId}`);
+    };
 
     if (isLoading) return <Loading />;
 
     return (
         <div className="px-8">
             <h1 className="py-8 text-2xl font-bold">Products</h1>
-            <FilterLayout />
+            <FilterLayout
+                onCategoryChange={setCategoryFilter}
+                currentCategory={categoryFilter}
+                onSortByChange={setSortByValue}
+                onBrandChange={setSelectedBrandNames}
+                availableBrands={Array.from(new Set(allProducts.map(p => p.brand)))} // Pasar solo los nombres
+            />
             <div className="gap-x-2 gap-y-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                {products.map(product => (
-                    <ProductItem key={product.id} productId={product.id} redirectToProductDetail={redirectToProductDetail} />
-                ))}
+                {filteredProducts.length === 0 ? (
+                    <div className="col-span-full text-center py-8">
+                        {selectedBrandNames.length > 0 || categoryFilter !== 'All'
+                            ? "No products match your filters"
+                            : "No products available"}
+                    </div>
+                ) : (
+                    filteredProducts.map(product => (
+                        <ProductItem
+                            key={product.id}
+                            productInfo={product}
+                            redirectToProductDetail={redirectToProductDetail}
+                        />
+                    ))
+                )}
             </div>
         </div>
-    )
+    );
 }

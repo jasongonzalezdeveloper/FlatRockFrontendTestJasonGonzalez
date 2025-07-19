@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import Image from 'next/image'
 import { ShoppingBag } from 'lucide-react';
@@ -9,29 +9,15 @@ import { Product } from '@/components/types/products/Product';
 import { Category } from '@/components/types/products/Enums';
 
 type ProductProps = {
-    productId: string;
+    productInfo: Product;
     redirectToProductDetail: (productId: string) => void;
 };
-export default function ProductItem({ productId, redirectToProductDetail }: ProductProps) {
-    const [productInfo, setProductInfo] = useState<Product>();
+export default function ProductItem({ productInfo, redirectToProductDetail }: ProductProps) {
     const [cartColor, setCartColor] = useState('#08BB4F');
-
-    useEffect(() => {
-        const getProductDetail = async () => {
-            try {
-                const response = await fetch(`http://localhost:3010/products/${productId}`);
-                const data = await response.json();
-                setProductInfo(data);
-            } catch (err) {
-                throw new Error('Error loading product details');
-            }
-        }
-        getProductDetail();
-    }, [productId]);
 
     return (
         <>
-            <div className="w-[232px] text-[#667085] hover:bg-[#667085] transition-colors duration-300 hover:text-white border-[#F7F5F7] border-[1.54px] relative rounded-lg overflow-hidden cursor-pointer" onClick={() => redirectToProductDetail("1231231312")}>
+            <div className="w-[232px] text-[#667085] hover:bg-[#667085] transition-colors duration-300 hover:text-white border-[#F7F5F7] border-[1.54px] relative rounded-lg overflow-hidden cursor-pointer" onClick={() => redirectToProductDetail(productInfo.id)}>
                 <div className="absolute top-2 right-2 z-10 cursor-pointer" onClick={e => e.stopPropagation()}>
                     <div className="bg-white rounded-full flex items-center justify-center w-8 h-8 shadow">
                         <ShoppingBag color={cartColor} size={20} />

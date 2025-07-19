@@ -1,10 +1,12 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Image from 'next/image'
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import DropdownMenu from '@/components/ui/DropdownMenu';
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { Product } from '@/components/types/products/Product';
+import { Category } from '@/components/types/products/Enums';
 
 
 const options = [
@@ -13,14 +15,34 @@ const options = [
     'red'
 ];
 
-
 export default function ProductDetail() {
     const [open, setOpen] = useState(false);
+    const [product, setProduct] = useState<Product>();
     const [selected, setSelected] = useState<string | null>(null);
 
     const router = useRouter();
+    const params = useParams();
     const returnToProducts = () => {
         router.push("/product/list");
+    }
+
+    useEffect(() => {
+        const { id } = params;
+        const getProductDetail = async () => {
+            try {
+                const response = await fetch(`http://localhost:3010/products/${id}`);
+                const data = await response.json();
+                setProduct(data);
+            } catch (err) {
+                console.error(err instanceof Error ? err.message : 'Unknown error');
+            }
+        }
+
+        getProductDetail();
+    }, []);
+
+    const addToCart = () => {
+
     }
 
     return (
@@ -33,7 +55,7 @@ export default function ProductDetail() {
                 <div className="flex items-center justify-center">
                     <div className="w-[625px] h-[613px] flex items-center justify-center">
                         <Image
-                            src="/images/image-test.jpg"
+                            src={product?.category === Category.Shoes ? "/images/shoes.png" : "/images/t-shirt.png"}
                             width={625}
                             height={613}
                             alt="Product Image"
@@ -44,46 +66,51 @@ export default function ProductDetail() {
 
                 <div className="flex flex-col justify-start">
                     <div className="text-4xl font-bold mb-2">
-                        Product Name
+                        {product?.product_name}
                     </div>
                     <div className="text-2xl text-[#828282] mb-4">
-                        Brand
+                        {product?.brand}
                     </div>
                     <div className="text-2xl font-semibold mb-4">
-                        $99.99
+                        {product?.price}
                     </div>
                     <span className="text-[#828282] mb-6 block">
-                        Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat.<br /><br />
-                        Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede.<br /><br />
-                        Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.
+                        {product?.description}
                     </span>
                     <div className="mb-6">
-                        <div className="relative  w-[290px]">
-                            <button
-                                className="border-b-2 border-black px-0 py-2 text-left flex justify-between items-center cursor-pointer bg-white w-[290px] rounded-none"
-                                onClick={() => setOpen(!open)}
-                            >
-                                <span>Select Option: {selected}</span>
-                                {open ? <ChevronUp /> : <ChevronDown />}
-                            </button>
-                            {open && (
-                                <DropdownMenu options={options} selected={selected} setSelected={setSelected} setOpen={setOpen} />
-                            )}
-                        </div>
+                        {product && product?.selectible_option && product?.selectible_option?.option?.length > 0 ? (
+                            <div className="relative w-[290px]">
+                                <button
+                                    className="border-b-2 border-black px-0 py-2 text-left flex justify-between items-center cursor-pointer bg-white w-[290px] rounded-none"
+                                    onClick={() => setOpen(!open)}
+                                >
+                                    <span>Select Option: {selected}</span>
+                                    {open ? <ChevronUp /> : <ChevronDown />}
+                                </button>
+                                {open && (
+                                    <DropdownMenu options={product?.selectible_option?.option} selected={selected} setSelected={setSelected} setOpen={setOpen} />
+                                )}
+                            </div>
+                        ) : ''}
                     </div>
                     <div className="mb-6">
-                        <button className="bg-black text-white w-full py-5 rounded-lg font-semibold shadow hover:bg-gray-400 transition-colors cursor-pointer">
+                        <button className="bg-black text-white w-full py-5 rounded-lg font-semibold shadow hover:bg-gray-400 transition-colors cursor-pointer" onClick={addToCart}>
                             Add to cart
                         </button>
                     </div>
                     <div>
-                        <div className=" font-semibold">
-                            <span className="text-[#828282]">Available Quantity:</span>
-                            <span className="text-[#02C10A]">Stock_quantity</span>
-                        </div>
-                        <div className="text-[#EE5F81] font-semibold">
-                            Out of stock
-                        </div>
+                        {
+                            product?.stock_quantity == 0 ? (
+                                <div className="text-[#EE5F81] font-semibold">
+                                    Out of stock
+                                </div>
+                            ) : (
+                                <div className=" font-semibold">
+                                    <span className="text-[#828282]">Available Quantity:</span>
+                                    <span className="text-[#02C10A] pl-2">{product?.stock_quantity}</span>
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
             </div>

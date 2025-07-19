@@ -4,12 +4,17 @@ import BrandDropdown from './dropdowns/BrandDropdown';
 import PriceDropdown from './dropdowns/PriceDropdown';
 import SortByDropdown from './dropdowns/SortByDropdown';
 
-export default function DropdownFilter() {
+type DropdownFilterProps = {
+  onSortByChange: (sortBy?: string) => void;
+  onBrandChange: (brand?: string[]) => void;
+};
+
+export default function DropdownFilter({ onSortByChange, onBrandChange }: DropdownFilterProps) {
   return (
     <div className='flex gap-2'>
-        <BrandDropdown/>
+        <BrandDropdown onBrandChange={onBrandChange}/>
         <PriceDropdown/>
-        <SortByDropdown/>
+        <SortByDropdown onSortByChange={onSortByChange} />
     </div>
   )
 }

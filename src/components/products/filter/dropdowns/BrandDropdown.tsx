@@ -1,25 +1,43 @@
 'use client';
-import { Check, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { Brand } from '@/components/types/products/Brand';
+import { ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-const brands = [
-    'Nike',
-    'Adidas',
-    'Puma',
-    'Reebok'
-];
+type BrandDropdownProps = {
+    onBrandChange: (brandNames: string[]) => void;
+}
 
-export default function BrandDropdown() {
+export default function BrandDropdown({ onBrandChange }: BrandDropdownProps) {
     const [open, setOpen] = useState(false);
-    const [selected, setSelected] = useState<string[]>([]);
+    const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+    const [brandsOptions, setBrandsOptions] = useState<Brand[]>([]);
 
-    const toggleBrand = (brand: string) => {
-        setSelected(selected =>
-            selected.includes(brand)
-                ? selected.filter(b => b !== brand)
-                : [...selected, brand]
+
+    useEffect(() => {
+        onBrandChange(selectedBrands);
+    }, [selectedBrands, onBrandChange]);
+
+    const toggleBrand = (brandName: string) => {
+        setSelectedBrands(prev => 
+            prev.includes(brandName)
+                ? prev.filter(b => b !== brandName)
+                : [...prev, brandName]
         );
     };
+
+    const getBrands = async () => {
+        try {
+            const response = await fetch('http://localhost:3010/brands');
+            const data = await response.json();
+            setBrandsOptions(data);
+        } catch (error) {
+            console.error(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+
+    useEffect(() => {
+        getBrands();
+    }, []);
 
     return (
         <div className="relative">
@@ -27,28 +45,25 @@ export default function BrandDropdown() {
                 className="bg-[#EBEDEC] rounded-full px-4 py-2 text-left flex justify-between items-center cursor-pointer"
                 onClick={() => setOpen(!open)}
             >
-                Brand
-                {open ? (
-                    <ChevronUp />
-                ) : (
-                    <ChevronDown />
-                )}
+                Brands
+                {open ? <ChevronUp /> : <ChevronDown />}
             </button>
             {open && (
-                <div className="absolute left-0 mt-2 bg-white border border-gray-200 rounded shadow z-50 min-w-max">
-                    {brands.map(brand => (
+                <div className="absolute left-0 mt-2 bg-white border border-gray-200 rounded shadow z-50 min-w-max max-h-60 overflow-y-auto">
+                    {brandsOptions.map(brand => (
                         <div
-                            key={brand}
+                            key={brand.id}
                             className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
-                            onClick={() => toggleBrand(brand)}
+                            onClick={() => toggleBrand(brand.name)}
                         >
                             <span className="mr-2">
-                                {selected.includes(brand) ? (
-                                    <Check />) : (
-                                    <span className="inline-block w-4 h-4 border border-gray-300 rounded"></span>
+                                {selectedBrands.includes(brand.name) ? (
+                                    <Check className="text-green-500" size={16} />
+                                ) : (
+                                    <span className="inline-block w-4 h-4 border border-gray-300 rounded" />
                                 )}
                             </span>
-                            {brand}
+                            {brand.name}
                         </div>
                     ))}
                 </div>

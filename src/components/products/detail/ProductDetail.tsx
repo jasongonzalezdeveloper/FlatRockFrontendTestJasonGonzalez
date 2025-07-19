@@ -10,12 +10,14 @@ import { Category } from '@/components/types/products/Enums';
 import toast from 'react-hot-toast';
 import Loading from '@/components/ui/Loading';
 import { UseCartContext } from '@/components/hooks/CartContext';
+import { CartItem } from '@/components/types/CartItem';
 
 export default function ProductDetail() {
     const [open, setOpen] = useState(false);
     const [product, setProduct] = useState<Product | undefined>();
     const [selected, setSelected] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [availableStock, setAvailableStock] = useState<number>(0);
     const { cart, addToCart, setProductToCartItem } = UseCartContext();
 
     const router = useRouter();
@@ -24,6 +26,15 @@ export default function ProductDetail() {
         router.push("/product/list");
     }
 
+    useEffect(() => {
+        if (product) {
+            const quantityInCart = cart
+                .filter((item: CartItem) => item.id === product.id && item.option_type === (selected ?? ""))
+                .reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+
+            setAvailableStock(product.stock_quantity - quantityInCart);
+        }
+    }, [cart, product, selected]);
 
     useEffect(() => {
         const { id } = params;
@@ -31,11 +42,7 @@ export default function ProductDetail() {
             try {
                 const response = await fetch(`http://localhost:3010/products/${id}`);
                 const data = await response.json();
-                const updatedProduct = {
-                    ...data,
-                    stock_quantity: refreshQuantity(data)
-                };
-                setProduct(updatedProduct);
+                setProduct(data); 
             } catch (err) {
                 console.error(err instanceof Error ? err.message : 'Unknown error');
             }
@@ -43,26 +50,20 @@ export default function ProductDetail() {
         getProductDetail();
     }, []);
 
-    const refreshQuantity = (product: Product) => {
-        const item = cart.find((item: { id: string; }) => item.id === product.id);
-        return item ? product.stock_quantity - item.quantity : product.stock_quantity;
-    }
-
     const onClickAddToCart = () => {
         setError(null);
         if (product) {
-            if (product?.stock_quantity === 0) {
+            if (availableStock === 0) {
                 setError('This product is out of stock');
                 return;
             }
 
-            if (product && product?.selectible_option && product?.selectible_option?.option?.length > 0 && !selected) {
+            if (product.selectible_option && product.selectible_option.option.length > 0 && !selected) {
                 setError('Please select an option before adding to cart');
                 return;
             }
 
-            product.stock_quantity -= 1;
-            addToCart(setProductToCartItem(product!, selected ?? "", product?.selectible_option?.option_name ?? ""));
+            addToCart(setProductToCartItem(product, selected ?? "", product?.selectible_option?.option_name ?? ""));
             toast.success("Product added to cart!");
         }
     };
@@ -126,20 +127,20 @@ export default function ProductDetail() {
                         <button
                             className="bg-black text-white w-full py-5 rounded-lg font-semibold shadow hover:bg-gray-400 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                             onClick={onClickAddToCart}
-                            disabled={product?.stock_quantity === 0}>
+                            disabled={availableStock === 0}>
                             Add to cart
                         </button>
                     </div>
                     <div>
                         {
-                            product?.stock_quantity == 0 ? (
+                            availableStock === 0 ? (
                                 <div className="text-[#EE5F81] font-semibold">
                                     Out of stock
                                 </div>
                             ) : (
                                 <div className=" font-semibold">
                                     <span className="text-[#828282]">Available Quantity:</span>
-                                    <span className="text-[#02C10A] pl-2">{product?.stock_quantity}</span>
+                                    <span className="text-[#02C10A] pl-2">{availableStock}</span>
                                 </div>
                             )
                         }

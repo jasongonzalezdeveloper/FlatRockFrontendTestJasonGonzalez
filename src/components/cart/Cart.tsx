@@ -11,16 +11,28 @@ interface CartProps {
     open: boolean;
 }
 export default function Cart({ open }: CartProps) {
-    const { cart } = UseCartContext();
+    const { cart, incrementItem, decrementItem, removeFromCart } = UseCartContext();
+
+    const addOneMoreToCart =(productId: string, option_type: string) => {
+        incrementItem(productId, option_type);
+    }
+
+    const removeOneMoreFromCart =(productId: string, option_type: string) => {
+        decrementItem(productId, option_type);
+    }
+
+    const removeProductInCart = (productId: string, option_type: string) => {
+        removeFromCart(productId, option_type);
+    }
 
     return (
-        <div className={`absolute right-0 top-[90px] w-[400px] h-[500px] bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 ${open ? "block" : "hidden"}`}>
+        <div className={`absolute right-0 top-[90px] w-[400px] bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 ${open ? "block" : "hidden"}`}>
             <div className="p-4 h-[420px] overflow-y-auto">
                 {cart?.length === 0 ? (
                     <div>Your cart is empty</div>
                 ) : (
                     cart?.map((item: CartItem) => (
-                        <div key={item.id} className="grid grid-cols-3 gap-4 items-center mb-3">
+                        <div key={item.id+item.option_name+item.option_type} className="grid grid-cols-3 gap-4 items-center mb-3">
                             <div>
                                 <Image
                                     src={item?.category === Category.Shoes ? "/images/shoes.png" : "/images/t-shirt.png"}
@@ -35,18 +47,18 @@ export default function Cart({ open }: CartProps) {
                                 <div className="text-sm text-[#828282]">{item.product_name}</div>
                                 <div className="text-sm text-[#828282]">{item.option_name} {item.option_type}</div>
                                 <div className="flex items-center gap-2 mt-2">
-                                    <button className="p-1 rounded bg-gray-100 hover:bg-gray-200">
+                                    <button className="p-1 rounded bg-gray-100 hover:bg-gray-200" onClick={() => removeOneMoreFromCart(item.id, item.option_type)}>
                                         <Minus size={16} />
                                     </button>
                                     <span className="px-2">{item.quantity}</span>
-                                    <button className="p-1 rounded bg-gray-100 hover:bg-gray-200">
+                                    <button className="p-1 rounded bg-gray-100 hover:bg-gray-200" onClick={() => addOneMoreToCart(item.id, item.option_type)}>
                                         <Plus size={16} />
                                     </button>
                                 </div>
                             </div>
                             <div className="flex flex-col items-end justify-start">
                                 <div className="font-bold mb-0">${(item.price * item.quantity).toFixed(2)}</div>
-                                <button className="mt-2 p-2 rounded-full hover:bg-gray-200">
+                                <button className="mt-2 p-2 rounded-full hover:bg-gray-200" onClick={() => removeProductInCart(item.id, item.option_type)}>
                                     <Trash />
                                 </button>
                             </div>

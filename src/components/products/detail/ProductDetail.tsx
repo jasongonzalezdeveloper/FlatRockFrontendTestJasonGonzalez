@@ -7,16 +7,16 @@ import DropdownMenu from '@/components/ui/DropdownMenu';
 import { useParams, useRouter } from "next/navigation";
 import { Product } from '@/components/types/products/Product';
 import { Category } from '@/components/types/products/Enums';
-import { UseCart } from '@/components/hooks/UseCart';
 import toast from 'react-hot-toast';
 import Loading from '@/components/ui/Loading';
+import { UseCartContext } from '@/components/hooks/CartContext';
 
 export default function ProductDetail() {
     const [open, setOpen] = useState(false);
     const [product, setProduct] = useState<Product | undefined>();
     const [selected, setSelected] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const { addToCart, setProductToCartItem } = UseCart();
+    const { cart, addToCart, setProductToCartItem } = UseCartContext();
 
     const router = useRouter();
     const params = useParams();
@@ -44,9 +44,8 @@ export default function ProductDetail() {
     }, []);
 
     const refreshQuantity = (product: Product) => {
-        const savedCart = localStorage.getItem('cart');
-        const item = savedCart ? JSON.parse(savedCart).find((item: { id: string; }) => item.id === product.id) : null;
-        return item ? item.quantity : product.stock_quantity;
+        const item = cart.find((item: { id: string; }) => item.id === product.id);
+        return item ? product.stock_quantity - item.quantity : product.stock_quantity;
     }
 
     const onClickAddToCart = () => {
@@ -63,7 +62,7 @@ export default function ProductDetail() {
             }
 
             product.stock_quantity -= 1;
-            addToCart(setProductToCartItem(product!, selected ?? ""));
+            addToCart(setProductToCartItem(product!, selected ?? "", product?.selectible_option?.option_name ?? ""));
             toast.success("Product added to cart!");
         }
     };

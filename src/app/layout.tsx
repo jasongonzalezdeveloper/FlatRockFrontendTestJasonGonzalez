@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/header/Header";
 import { Metadata } from "next";
 import { Toaster } from 'react-hot-toast';
+import { CartProvider } from "@/components/hooks/CartContext";
 
 
 const geistSans = Geist({
@@ -26,27 +27,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Header />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          className: '',
-          success: {
-            className: 'bg-green-100 border-l-4 border-green-500 text-green-700',
-            iconTheme: {
-              primary: '#10B981',
-              secondary: 'white',
-            },
-          },
-          error: {
-            className: 'bg-red-100 border-l-4 border-red-500 text-red-700',
-          },
-        }}
-      />
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <CartProvider>
+          <Header />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className: '',
+              success: {
+                className: 'bg-green-100 border-l-4 border-green-500 text-green-700',
+                iconTheme: {
+                  primary: '#10B981',
+                  secondary: 'white',
+                },
+              },
+              error: {
+                className: 'bg-red-100 border-l-4 border-red-500 text-red-700',
+              },
+            }}
+          />
+          
+          {children}
+        </CartProvider>
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import { OptionEnum, OptionName } from "./Enums";
+import { OptionName } from "./Enums";
 
 export interface SelectibleOption {
     option_type: string;

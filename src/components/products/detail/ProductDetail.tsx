@@ -29,7 +29,7 @@ export default function ProductDetail() {
     useEffect(() => {
         if (product) {
             const quantityInCart = cart
-                .filter((item: CartItem) => item.id === product.id && item.option_type === (selected ?? ""))
+                .filter((item: CartItem) => item.id === product.id)
                 .reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
 
             setAvailableStock(product.stock_quantity - quantityInCart);
@@ -125,7 +125,7 @@ export default function ProductDetail() {
                     </div>
                     <div className="mb-6">
                         <button
-                            className="bg-black text-white w-full py-5 rounded-lg font-semibold shadow hover:bg-gray-400 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                            className="bg-black text-white hover:bg-gray-400  w-full py-5 rounded-lg font-semibold shadow transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                             onClick={onClickAddToCart}
                             disabled={availableStock === 0}>
                             Add to cart

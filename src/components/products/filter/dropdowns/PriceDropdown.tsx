@@ -1,6 +1,6 @@
 'use client';
 import { ChevronDown } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
@@ -11,17 +11,33 @@ function valuetext(value: number) {
 }
 
 type PriceDropdownProps = {
-  priceRange?: [number, number];
-  getPriceRangeFilter: (prices: number[]) => void;
+    priceRange?: [number, number];
+    getPriceRangeFilter: (prices: number[]) => void;
 }
 export default function PriceDropdown({ priceRange, getPriceRangeFilter }: PriceDropdownProps) {
     const [value, setValue] = useState<number[]>([0, 50]);
     const [open, setOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         if (priceRange) {
             setValue(priceRange);
         }
     }, [priceRange]);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        }
+        if (open) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [open]);
 
     const handleChange = (event: Event, newValue: number[]) => {
         setValue(newValue);
@@ -29,7 +45,7 @@ export default function PriceDropdown({ priceRange, getPriceRangeFilter }: Price
     };
 
     return (
-        <div className="relative w-fit z-20">
+        <div ref={dropdownRef} className="relative w-fit z-20">
             <button
                 className="bg-[#EBEDEC] rounded-full px-4 py-2 text-left flex justify-between items-center cursor-pointer"
                 onClick={() => setOpen(!open)}

@@ -51,7 +51,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     price: product ? product.price : 0,
     quantity: 1,
     stock: product ? product.stock_quantity : 0,
-    option_type: optionType ? optionType : "",
+    option_type: optionType ? optionType.toString() : "",
     option_name: optionName ? optionName : ""
   });
 

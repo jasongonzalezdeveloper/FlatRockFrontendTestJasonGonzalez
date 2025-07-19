@@ -1,7 +1,7 @@
 'use client';
 import { Brand } from '@/components/types/products/Brand';
 import { ChevronDown, ChevronUp, Check } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type BrandDropdownProps = {
     onBrandChange: (brandNames: string[]) => void;
@@ -11,7 +11,21 @@ export default function BrandDropdown({ onBrandChange }: BrandDropdownProps) {
     const [open, setOpen] = useState(false);
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
     const [brandsOptions, setBrandsOptions] = useState<Brand[]>([]);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            setOpen(false);
+            }
+        }
+        if (open) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [open]);
 
     useEffect(() => {
         onBrandChange(selectedBrands);
@@ -40,7 +54,7 @@ export default function BrandDropdown({ onBrandChange }: BrandDropdownProps) {
     }, []);
 
     return (
-        <div className="relative">
+        <div ref={dropdownRef} className="relative">
             <button
                 className="bg-[#EBEDEC] rounded-full px-4 py-2 text-left flex justify-between items-center cursor-pointer"
                 onClick={() => setOpen(!open)}

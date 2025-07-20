@@ -33,6 +33,7 @@ To run this project run
   npm run dev
 ```
 
+Use node version 22.17.0
 
 ## Authors
 
